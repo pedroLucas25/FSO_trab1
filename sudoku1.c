@@ -5,14 +5,14 @@
 
 int ler_termo(FILE *fp); // Ler cada termo da matriz salva no arquivo e converte para int
 int ** set_matriz(int **matriz,FILE *fp, int L, int C);  // seta uma matriz LxC com os valores salvo em um arquivo
-int** aloc_matriz(int L,int C);
-void print_matriz(int **matriz,int L,int C);
+int** aloc_matriz(int L,int C); // aloca dinamicamente memória para uma matriz LxC
+void print_matriz(int **matriz,int L,int C); // printa uma matriz na tela de dimensão LxC
 void print_vetor(int* vetor, int N); // printa na tela os valores de um vetor de N posições
-void* trata_linha(void* entrada);
+void* trata_linha(void* entrada); // Função da Thread que analisará se a linha é ou não válida
 
-void extrai_linha(int** matriz, int linha, int* vetor_linha);
-void extrai_coluna(int** matriz, int coluna, int* vetor_coluna);
-void extrai_submatriz(int** matriz, int n, int m, int** submatriz);
+void extrai_linha(int** matriz, int linha, int* vetor_linha); // extrai uma linha específica de uma matriz
+void extrai_coluna(int** matriz, int coluna, int* vetor_coluna); // extrai uma coluna específica de uma matriz
+void extrai_submatriz(int** matriz, int n, int m, int** submatriz); // extrai um submatriz 3x3 de uma matriz
 
 
 
@@ -39,45 +39,36 @@ typedef struct
 
 int main(){
 
-	pthread_t dthread_linha[9];
-	FILE *fp_sudoku;
-	int** matriz_sudoku;		
-	matriz_sudoku = aloc_matriz(9,9);
-
-	fp_sudoku = fopen("./sudokus/6.txt", "r");
-	matriz_sudoku = set_matriz(matriz_sudoku, fp_sudoku, 9,9);	
+	FILE *fp_sudoku; // Descritor de arquivo do Sudoku
+	pthread_t dthread_linha[9]; // Descritores das 9 Threads q analisarão as linhas da matriz
 	
-	printf("oi1\n");
-	
-	Param_linha* l;
-	l = (Param_linha*) malloc(sizeof(Param_linha));
+	int** matriz_sudoku; // Matriz que armazenará os dados lidos do arquivo	
+	matriz_sudoku = aloc_matriz(9,9); // aloca espaço em memória para a matriz_sudoku
 
-	printf("oi2\n");
-	l->matriz_sudoku = matriz_sudoku;
-	printf("oi3\n");
+	fp_sudoku = fopen("./sudokus/6.txt", "r"); // abrindo o arquivo para leitura
+	matriz_sudoku = set_matriz(matriz_sudoku, fp_sudoku, 9,9);// passando os dados do arquivo para a matriz
+	
+	Param_linha* l; // Struct que será passada como parâmetros para as Threads de validação de linha
+	l = (Param_linha*) malloc(sizeof(Param_linha)); // Alocando memória para a Struct
+
+
+	l->matriz_sudoku = matriz_sudoku; // passando a matriz_sudoku para a struct
+	
 	// chamando as threads para tratar as linhas
 	for(int i = 0; i<9; i++)
 	{
-		l->linha = i;
+		l->linha = i; // passando a linha que a Thread irá avaliar
 
-		pthread_create(&dthread_linha[i], NULL,trata_linha, (void*) l);
-		usleep(5000);
+		pthread_create(&dthread_linha[i], NULL,trata_linha, (void*) l); // chamando uma Thread para analisar uma linha
+		usleep(5000); // esperando que a Thread leia os parâmetros antes de chamar a próx Thread
 	}
 
 	
-	
+	// Esperando todas as Threads terminarem.
 	for(int i = 0; i<9; i++)
 	{
 		pthread_join(dthread_linha[i], NULL);
 	}
-
-	
-
-	printf("------------- main -----------\n");
-	printf("%d\n", resultado[3]);
-
-
-
 
 	return 0;
 }
@@ -93,17 +84,13 @@ void extrai_linha(int** matriz, int linha, int* vetor_linha)
 		vetor_linha[i] = matriz[linha][i];
 		printf("vetor_linha[i] = %d\n", vetor_linha[i]);
 	}
-
-
-
 }
 
 
 
 
 void* trata_linha(void* in)
-{	
-	
+{		
 	int* vetor_linha;
 	int num_linha;
 	int sum = 0;
@@ -136,23 +123,6 @@ void* trata_linha(void* in)
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
