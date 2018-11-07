@@ -9,6 +9,7 @@ void* estado_ajudante(void* ent);
 void* estado_alunos(void*);
 
 
+
 typedef struct{
   int cont_ajudas;
   int pos_cadeira;
