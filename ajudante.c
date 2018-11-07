@@ -23,8 +23,11 @@
 */
 
 int gera_aleatorio(int, int);
-void* estado_ajudante(void* ent);
+void* estado_ajudante(void*);
 void* estado_alunos(void*);
+void incrementa_fila(int*);
+void retira_da_fila(int*);
+int conta_fila(int*);
 
 typedef struct{
   int cont_ajudas; // se colocar = 3 não compila
@@ -57,9 +60,9 @@ int main(){
   sem_init(&sem_fila, 0, num_cadeiras); // Iniciando semáforo de tamanho num_alunos para gerenciar a fila
   sem_init(&sem_ajudante, 0, 1);// Iniciando semáforo de tamnho 1 para gerenciar se o Monitor estará acordado ou dormindo
 
-  for(int i=0;i<num_cadeiras;i++){  // kkkkkkkkkkkkkkkkkkkkkkkk. mas tu q ta fazendo esse trab todo.. kk to só nos pitaco.. kkkk
+  for(int i=0;i<num_cadeiras;i++){
     printf("%d\n", fila[i]);
-  }//to com a ideia mas sem saber digitar no codigo
+  }
 
 
 
@@ -96,38 +99,67 @@ int gera_aleatorio(int inter_a, int inter_b){
 
 void* estado_alunos(void* ent){
   Param_alunos* alunos;
+  Param_alunos* aux;
+  aux = (Param_alunos*) ent;
   alunos = (Param_alunos*)malloc(sizeof(Param_alunos));
-  alunos = (Param_alunos*)ent;
+  ent = (Param_alunos*) ent;
 
-  //alunos->
+  alunos->pos_cadeira = aux->pos_cadeira;
+  alunos->id = aux->id;
+  alunos->cont_ajudas = 0;
+
+  int value_sem_ajudante;
+
+  sem_getvalue(&sem_ajudante, &value_sem_ajudante);
+
+  if(value_sem_ajudante == 0) // Verifica
+    {
+      printf("Estudante %d acordando o Monitor\n", alunos->id);
+      sem_post(&sem_ajudante);
+
+      sem_wait(&sem_fila);
+      // insere(alunos->id);
+      // printf("Estudante sentado no banco %d", cont_fila(fila));
+
+    }
+
+  printf("Estudante %d estudando!", alunos->id);
+  sleep(1);
 
 
 
   pthread_exit(0);
 }
 
-void* estado_ajudante(void* Param_ajudante){
+void* estado_ajudante(void* ent){
 
-  int value_sem_ajudante; // posso trocar o nome dessa vairável?
+  Param_ajudante *ajudante;
 
-  while(1)
+  ajudante = (Param_ajudante*)malloc(sizeof(Param_ajudante));
 
-    sem_getvalue(&sem_ajudante, &value_sem_ajudante);//man vou almoçar ali, ja volto. ok!
-    
-    if(value_sem_ajudante == 0) printf("Ajudante Dormindo");
-    if(sem_wait(&sem_ajudante)!= 0) printf("Erro!");
+  int value_sem_ajudante;
+
+  while(1){
+
+    sem_getvalue(&sem_ajudante, &value_sem_ajudante);
+
+    if(value_sem_ajudante == 0)
+      printf("Ajudante Dormindo");
+    if(value_sem_ajudante != 0)
+      printf("Erro!");
 
 
     printf("Ajudante Acordado!\n");
 
 
 
-if(value_sem_ajudante == 0) printf("Ajudante Dormindo"); // não? kk
-// man existe uma funçao chamanda sem_getvalue q retorna o valor
-//nice! vi aqui no face! kkkk. topper!
-// agora sim
-  }
+    if(value_sem_ajudante == 0) printf("Ajudante Dormindo");
 
+}
 
   pthread_exit(0);
+}
+
+void incrementa_fila(int id){
+
 }
