@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include<unistd.h>
 
 
 int ler_termo(FILE *fp); // Ler cada termo da matriz salva no arquivo e converte para int
@@ -51,13 +52,13 @@ int main(){
 	pthread_t dthread_linha[9]; // Descritores das 9 Threads q analisarão as linhas da matriz
 	pthread_t dthread_coluna[9]; // Descritores das 9 Threads q analisarão as colunas da matriz
 	pthread_t dthread_submatriz[9]; // Descritores das 9 Threads que analisarão as submatrizes 3x3
-	
-	int** matriz_sudoku; // Matriz que armazenará os dados lidos do arquivo	
+
+	int** matriz_sudoku; // Matriz que armazenará os dados lidos do arquivo
 	matriz_sudoku = aloc_matriz(9,9); // aloca espaço em memória para a matriz_sudoku
 
 	fp_sudoku = fopen("./sudokus/7.txt", "r"); // abrindo o arquivo para leitura
 	matriz_sudoku = set_matriz(matriz_sudoku, fp_sudoku, 9,9);// passando os dados do arquivo para a matriz
-	
+
 	Param_linha* l; // Struct que será passada como parâmetros para as Threads de validação de linha
 	l = (Param_linha*) malloc(sizeof(Param_linha)); // Alocando memória para a Struct
 
@@ -66,7 +67,7 @@ int main(){
 
 
 	l->matriz_sudoku = matriz_sudoku; // passando a matriz_sudoku para a struct linha
-	c->matriz_sudoku = matriz_sudoku; // passando a matriz_sudoku para a struct coluna	
+	c->matriz_sudoku = matriz_sudoku; // passando a matriz_sudoku para a struct coluna
 
 
 	// chamando as threads para tratar as linhas
@@ -89,24 +90,24 @@ int main(){
 	int** matriz3x3;
 	Param_matriz* m;
 	m = (Param_matriz*) malloc(sizeof(Param_matriz)); // Alocando memória para a Struct
-	
+
 	int cont_matriz = 0;
 
 	for(int i = 0; i<9; i+=3)
 	{
 		for(int j = 0; j<9; j+=3)
-		{			
+		{
 			matriz3x3 = desmembra_matriz(matriz_sudoku, i,j);
 			m->n_matriz = cont_matriz;
 			m->matriz3x3 = matriz3x3;
-			
+
 			pthread_create(&dthread_submatriz[cont_matriz], NULL, trata_matriz, (void*) m);
 			pthread_join(dthread_submatriz[cont_matriz], NULL);
 
-			cont_matriz++;			
+			cont_matriz++;
 		}
 	}
-	
+
 
 	// Esperando todas as Threads terminarem.
 	for(int i = 0; i<9; i++)
@@ -120,13 +121,13 @@ int main(){
 	int soma_resultado = 0;
 
 	for(int i=0; i<27; i++)
-	{		
+	{
 		if(i < 9)
 		{
 		    if(resultado[i] == 0)
 			{
 				printf("Existe um erro na linha %d\n", (i+1));
-			}		
+			}
 
 
 		}else if(i < 18)
@@ -138,7 +139,7 @@ int main(){
 
 
 		}else
-		{	
+		{
 			if(resultado[i] == 0)
 			{
 				printf("Existe um erro na matriz %d\n", (i-17));
@@ -153,7 +154,7 @@ int main(){
 	{
 		printf("Parabéns! A resolução do Sudoku está correta!\n");
 	}
-		
+
 	return 0;
 }
 
@@ -169,7 +170,7 @@ void* trata_matriz(void* in)
 	{
 		for(int j=0; j<3; j++)
 		{
-			soma+=entrada->matriz3x3[i][j];	
+			soma+=entrada->matriz3x3[i][j];
 		}
 	}
 
@@ -179,7 +180,7 @@ void* trata_matriz(void* in)
 	}else{
 		resultado[18+ entrada->n_matriz] = 0;
 	}
-		
+
 }
 
 
@@ -215,7 +216,7 @@ void extrai_linha(int** matriz, int linha, int* vetor_linha)
 
 
 void* trata_linha(void* in)
-{		
+{
 	int* vetor_linha;
 	int num_linha;
 	int sum = 0;
@@ -228,7 +229,7 @@ void* trata_linha(void* in)
 	vetor_linha = (int *) malloc(9*sizeof(int));
 
 	extrai_linha(entrada->matriz_sudoku, entrada->linha, vetor_linha);
-	
+
 	for(int i = 0; i<9; i++)
 	{
 		sum += vetor_linha[i];
@@ -255,7 +256,7 @@ void extrai_coluna(int** matriz, int coluna, int* vetor_coluna)
 
 
 void* trata_coluna(void* in)
-{		
+{
 	int* vetor_coluna;
 	int num_coluna;
 	int sum = 0;
@@ -268,7 +269,7 @@ void* trata_coluna(void* in)
 	vetor_coluna = (int *) malloc(9*sizeof(int));
 
 	extrai_coluna(entrada->matriz_sudoku, entrada->coluna, vetor_coluna);
-	
+
 	for(int i = 0; i<9; i++)
 	{
 		sum += vetor_coluna[i];
@@ -286,11 +287,11 @@ int ler_termo(FILE *fp)
 {
 	char A;
 	A = getc(fp);
-	
+
 	if(A == '\r'){
 		A = getc(fp);
 	}
-	
+
 	if(A == '\n'){
 		A = getc(fp);
 	}
@@ -299,7 +300,7 @@ int ler_termo(FILE *fp)
 		A = getc(fp);
 	}
 
-		
+
 	return atoi(&A);
 }
 
@@ -349,6 +350,3 @@ void print_vetor(int* vetor, int N)
 	}
 
 }
-
-
-
